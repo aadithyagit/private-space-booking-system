@@ -61,16 +61,24 @@ source database/schema.sql
 
 ### 2. Configure DB Credentials
 
-Edit `server/db.js`:
+Copy the example env file and fill in your MySQL password:
 
-```js
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'YOUR_PASSWORD',   // ← change this
-  database: 'private_space_booking'
-});
+```bash
+cd server
+copy .env.example .env
 ```
+
+Then edit `server/.env`:
+
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_mysql_password_here
+DB_NAME=private_space_booking
+PORT=3000
+```
+
+> ⚠️ The `.env` file is listed in `.gitignore` and will **never be pushed to GitHub**.
 
 ### 3. Install Dependencies & Start Server
 

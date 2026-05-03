@@ -1,11 +1,14 @@
-// db.js — MySQL connection using exact credentials
+// db.js — MySQL connection using environment variables
+// Copy server/.env.example to server/.env and set your credentials
+require('dotenv').config();
+
 const mysql = require('mysql2/promise');
 
 const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'Tari@12!34#',
-  database: 'private_space_booking',
+  host:     process.env.DB_HOST     || 'localhost',
+  user:     process.env.DB_USER     || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME     || 'private_space_booking',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
