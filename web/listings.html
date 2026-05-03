@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Browse Spaces — SpaceBook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span class="logo-icon">SB</span><span class="logo-text">SpaceBook</span></a>
+    <div class="nav-links">
+      <a href="listings.html" style="color:var(--primary-light)">Browse Spaces</a>
+      <a href="user-dashboard.html">My Bookings</a>
+      <a href="host.html">List a Space</a>
+    </div>
+    <div class="nav-auth" id="navAuth">
+      <button class="btn-outline" onclick="showModal('loginModal')">Login</button>
+      <a href="register.html" class="btn-primary">Register</a>
+    </div>
+    <button class="hamburger" onclick="toggleNav()">&#9776;</button>
+  </div>
+  <div class="mobile-nav" id="mobileNav">
+    <a href="listings.html">Browse Spaces</a>
+    <a href="user-dashboard.html">My Bookings</a>
+    <a href="host.html">List a Space</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <h1>Browse Spaces</h1>
+    <p id="resultsInfo">Showing all available spaces</p>
+  </div>
+</div>
+
+<!-- Search bar on top -->
+<div style="background:var(--bg-alt);border-bottom:1px solid var(--border);padding:16px 24px;">
+  <div class="container">
+    <div class="search-box" style="max-width:100%;box-shadow:none;background:transparent;border:none;padding:0;">
+      <div class="search-field">
+        <label>Type</label>
+        <select id="sType"><option value="">All</option><option>hall</option><option>auditorium</option><option>cowork</option><option>studio</option><option>turf</option></select>
+      </div>
+      <div class="search-field">
+        <label>City</label>
+        <select id="sCity"><option value="">All</option><option>Chennai</option><option>Coimbatore</option><option>Madurai</option><option>Salem</option><option>Trichy</option></select>
+      </div>
+      <div class="search-field">
+        <label>Date</label>
+        <input type="date" id="sDate"/>
+      </div>
+      <div class="search-field">
+        <label>Guests</label>
+        <input type="number" id="sGuests" placeholder="Any"/>
+      </div>
+      <button class="search-btn" onclick="applyFilters()">🔍 Search</button>
+    </div>
+  </div>
+</div>
+
+<div class="layout-2col">
+  <!-- Sidebar filters -->
+  <aside class="sidebar">
+    <div class="filter-card">
+      <h4>Price Range (₹/day)</h4>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px">Up to: <strong id="priceVal">₹30,000</strong></p>
+      <input type="range" class="range-input" id="priceRange" min="0" max="50000" value="50000" step="500" oninput="document.getElementById('priceVal').textContent='₹'+parseInt(this.value).toLocaleString();applyFilters()"/>
+    </div>
+    <div class="filter-card">
+      <h4>Space Type</h4>
+      <label class="filter-option"><input type="checkbox" value="hall" onchange="applyFilters()"/> Community Hall</label>
+      <label class="filter-option"><input type="checkbox" value="auditorium" onchange="applyFilters()"/> Auditorium</label>
+      <label class="filter-option"><input type="checkbox" value="cowork" onchange="applyFilters()"/> Coworking</label>
+      <label class="filter-option"><input type="checkbox" value="studio" onchange="applyFilters()"/> Studio</label>
+      <label class="filter-option"><input type="checkbox" value="turf" onchange="applyFilters()"/> Turf / Sports</label>
+    </div>
+    <div class="filter-card">
+      <h4>Availability</h4>
+      <label class="filter-option"><input type="checkbox" id="onlyAvail" onchange="applyFilters()"/> Available only</label>
+    </div>
+    <div class="filter-card">
+      <h4>Rating</h4>
+      <label class="filter-option"><input type="radio" name="rating" value="4.5" onchange="applyFilters()"/> 4.5+ ⭐</label>
+      <label class="filter-option"><input type="radio" name="rating" value="4.0" onchange="applyFilters()"/> 4.0+ ⭐</label>
+      <label class="filter-option"><input type="radio" name="rating" value="" onchange="applyFilters()"/> Any</label>
+    </div>
+  </aside>
+
+  <!-- Listings -->
+  <main>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <p id="countLabel" style="font-size:14px;color:var(--text-muted)"></p>
+      <select style="background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;" id="sortSelect" onchange="applyFilters()">
+        <option value="rating">Sort: Top Rated</option>
+        <option value="priceLow">Price: Low to High</option>
+        <option value="priceHigh">Price: High to Low</option>
+      </select>
+    </div>
+    <div class="cards-grid" id="listingGrid"></div>
+    <div id="noResults" style="display:none;text-align:center;padding:60px 20px;color:var(--text-muted)">
+      <div style="font-size:48px;margin-bottom:12px">🔍</div>
+      <h3>No spaces found</h3>
+      <p>Try changing your filters or search in a different city.</p>
+    </div>
+  </main>
+</div>
+
+<!-- Login Modal -->
+<div class="modal-bg" id="loginModal">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('loginModal')">✕</button>
+    <h2>Login</h2>
+    <div class="form-group"><label>Email</label><input type="email" placeholder="you@example.com" class="form-input"/></div>
+    <div class="form-group"><label>Password</label><input type="password" placeholder="••••••••" class="form-input"/></div>
+    <button class="btn-primary full" onclick="fakeLogin()">Login</button>
+    <p class="form-alt">No account? <a href="register.html">Register free</a></p>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  function applyFilters() {
+    const typeDropdown = document.getElementById("sType").value;
+    const city = document.getElementById("sCity").value;
+    const maxPrice = parseInt(document.getElementById("priceRange").value);
+    const onlyAvail = document.getElementById("onlyAvail").checked;
+    const minRating = parseFloat(document.querySelector('input[name="rating"]:checked')?.value || 0);
+    const sort = document.getElementById("sortSelect").value;
+    const guestsVal = parseInt(document.getElementById("sGuests").value) || 0;
+
+    // checkbox types
+    const checkedTypes = [...document.querySelectorAll(".filter-card input[type=checkbox][value]")].filter(c=>c.checked).map(c=>c.value);
+
+    let filtered = SPACES.filter(s => {
+      if (typeDropdown && s.type !== typeDropdown) return false;
+      if (city && s.city !== city) return false;
+      if (s.price > maxPrice) return false;
+      if (onlyAvail && !s.available) return false;
+      if (minRating && s.rating < minRating) return false;
+      if (checkedTypes.length && !checkedTypes.includes(s.type)) return false;
+      if (guestsVal && s.capacity < guestsVal) return false;
+      return true;
+    });
+
+    if (sort === "priceLow") filtered.sort((a,b)=>a.price-b.price);
+    else if (sort === "priceHigh") filtered.sort((a,b)=>b.price-a.price);
+    else filtered.sort((a,b)=>b.rating-a.rating);
+
+    const grid = document.getElementById("listingGrid");
+    const noRes = document.getElementById("noResults");
+    document.getElementById("countLabel").textContent = `${filtered.length} space${filtered.length !== 1 ? "s" : ""} found`;
+
+    if (!filtered.length) { grid.innerHTML = ""; noRes.style.display = "block"; return; }
+    noRes.style.display = "none";
+    grid.innerHTML = filtered.map(renderCard).join("");
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // Pre-fill from URL params
+    const p = new URLSearchParams(window.location.search);
+    if (p.get("type")) document.getElementById("sType").value = p.get("type");
+    if (p.get("city")) document.getElementById("sCity").value = p.get("city");
+    if (p.get("date")) document.getElementById("sDate").value = p.get("date");
+    if (p.get("guests")) document.getElementById("sGuests").value = p.get("guests");
+    applyFilters();
+  });
+</script>
+</body>
+</html>

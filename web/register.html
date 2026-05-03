@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register — SpaceBook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(99,102,241,0.2),transparent);}
+    .auth-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px;width:100%;max-width:420px;box-shadow:var(--shadow-lg);}
+    .auth-title{font-size:22px;font-weight:700;text-align:center;margin-bottom:6px;}
+    .auth-sub{text-align:center;color:var(--text-muted);font-size:14px;margin-bottom:24px;}
+    .schema-note{background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:var(--radius);padding:12px 14px;font-size:12px;color:var(--text-muted);margin-bottom:20px;line-height:1.6;}
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span class="logo-icon">SB</span><span class="logo-text">SpaceBook</span></a>
+    <div style="margin-left:auto"><a href="index.html" class="btn-outline" style="padding:8px 16px;font-size:13px;">← Home</a></div>
+  </div>
+</nav>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <div style="text-align:center;margin-bottom:16px;">
+      <div class="logo" style="justify-content:center;font-size:20px;">
+        <span class="logo-icon">SB</span><span class="logo-text">SpaceBook</span>
+      </div>
+    </div>
+    <h1 class="auth-title">Create Account</h1>
+    <p class="auth-sub">Book private spaces across Chennai</p>
+
+    <div class="schema-note">
+      ℹ️ <strong>Registration requires:</strong> Name + Valid Email only.<br>
+      Login is done using your email address.
+    </div>
+
+    <div class="form-group">
+      <label>Full Name *</label>
+      <input type="text" id="rName" class="form-input" placeholder="e.g. Rajesh Kumar"
+        oninput="clearErrors('rName')"/>
+    </div>
+
+    <div class="form-group">
+      <label>Email Address *</label>
+      <input type="email" id="rEmail" class="form-input" placeholder="you@gmail.com"
+        oninput="clearErrors('rEmail')"
+        onblur="showError('rEmail', Validate.email(this.value))"/>
+      <span class="input-hint">Must be valid format: user@domain.com</span>
+    </div>
+
+    <button class="btn-primary full" style="padding:13px;margin-top:8px;" id="regBtn" onclick="doRegister()">
+      Register
+    </button>
+
+    <div style="text-align:center;margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Already registered? Login below:</p>
+      <div class="form-group">
+        <input type="email" id="lEmail" class="form-input" placeholder="your@email.com"
+          oninput="clearErrors('lEmail')"
+          onblur="showError('lEmail', Validate.email(this.value))"/>
+      </div>
+      <button class="btn-outline full" id="loginBtn" onclick="doLogin()" style="padding:11px;">
+        Login with Email
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="js/api.js"></script>
+<script>
+  async function doRegister() {
+    clearErrors('rName','rEmail');
+    const name = document.getElementById('rName').value.trim();
+    const email = document.getElementById('rEmail').value.trim();
+
+    const nameErr = Validate.name(name);
+    if (nameErr) { showError('rName', nameErr); return; }
+    const emailErr = Validate.email(email);
+    if (emailErr) { showError('rEmail', emailErr); return; }
+
+    const btn = document.getElementById('regBtn');
+    btn.textContent = 'Registering...'; btn.disabled = true;
+
+    const result = await apiRegister(name, email);
+    btn.textContent = 'Register'; btn.disabled = false;
+
+    if (result.error) {
+      showToast('❌ ' + result.error, 'error');
+      // Show inline error for duplicate email
+      if (result.error.toLowerCase().includes('registered') || result.error.toLowerCase().includes('email')) {
+        showError('rEmail', result.error);
+      } else {
+        showError('rName', result.error);
+      }
+      return;
+    }
+
+    saveUser(result.user);
+    showToast('✅ Account created! Redirecting...');
+    setTimeout(() => window.location.href = 'user-dashboard.html', 1000);
+  }
+
+  async function doLogin() {
+    clearErrors('lEmail');
+    const email = document.getElementById('lEmail').value.trim();
+    const err = Validate.email(email);
+    if (err) { showError('lEmail', err); return; }
+
+    const btn = document.getElementById('loginBtn');
+    btn.textContent = 'Logging in...'; btn.disabled = true;
+    const result = await apiLogin(email);
+    btn.textContent = 'Login with Email'; btn.disabled = false;
+
+    if (result.error) {
+      showToast('❌ ' + result.error, 'error');
+      showError('lEmail', result.error);
+      return;
+    }
+
+    saveUser(result.user);
+    showToast('✅ Logged in!');
+    setTimeout(() => window.location.href = 'user-dashboard.html', 800);
+  }
+</script>
+</body>
+</html>

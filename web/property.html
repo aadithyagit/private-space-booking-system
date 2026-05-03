@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Space Details — SpaceBook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .property-hero { display:grid; grid-template-columns:1fr 380px; gap:28px; max-width:1200px; margin:0 auto; padding:32px 24px; }
+    .prop-image { border-radius:var(--radius-lg); background:var(--bg-card); border:1px solid var(--border); height:340px; display:flex; align-items:center; justify-content:center; font-size:100px; }
+    .booking-widget { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:24px; position:sticky; top:80px; }
+    .prop-detail { max-width:780px; }
+    .prop-title { font-size:28px; font-weight:800; margin-bottom:8px; }
+    .prop-meta { display:flex; gap:16px; flex-wrap:wrap; color:var(--text-muted); font-size:14px; margin-bottom:20px; }
+    .prop-rating { color:var(--warning); font-weight:600; }
+    .amenities-grid { display:flex; gap:10px; flex-wrap:wrap; margin:12px 0; }
+    .amenity-tag { background:var(--bg); border:1px solid var(--border); border-radius:999px; padding:5px 14px; font-size:13px; }
+    .avail-section { margin-top:28px; }
+    .widget-price { font-size:26px; font-weight:800; margin-bottom:4px; }
+    .widget-price small { font-size:14px; font-weight:400; color:var(--text-muted); }
+    .widget-divider { border:none; border-top:1px solid var(--border); margin:16px 0; }
+    .widget-total { display:flex; justify-content:space-between; font-weight:700; font-size:16px; margin-top:10px; }
+    .slot-btn { display:inline-block; padding:6px 16px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:none; margin:4px; }
+    .slot-avail { background:rgba(34,197,94,0.15); color:#4ade80; }
+    .slot-taken { background:rgba(239,68,68,0.1); color:#f87171; cursor:not-allowed; }
+    .slot-btn.selected { background:var(--primary); color:white; }
+    @media(max-width:900px){ .property-hero{grid-template-columns:1fr;} .booking-widget{position:static;} }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span class="logo-icon">SB</span><span class="logo-text">SpaceBook</span></a>
+    <div class="nav-links">
+      <a href="listings.html">Browse Spaces</a>
+      <a href="user-dashboard.html">My Bookings</a>
+    </div>
+    <div class="nav-auth" id="navAuth">
+      <button class="btn-outline" onclick="showModal('loginModal')">Login</button>
+      <a href="register.html" class="btn-primary">Register</a>
+    </div>
+    <button class="hamburger" onclick="toggleNav()">&#9776;</button>
+  </div>
+  <div class="mobile-nav" id="mobileNav">
+    <a href="listings.html">Browse Spaces</a>
+    <a href="user-dashboard.html">My Bookings</a>
+  </div>
+</nav>
+
+<div style="max-width:1200px;margin:0 auto;padding:16px 24px;">
+  <a href="listings.html" style="color:var(--text-muted);font-size:14px;">← Back to Listings</a>
+</div>
+
+<div class="property-hero" id="propContent">
+  <div style="color:var(--text-muted);font-size:14px;">Loading...</div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal-bg" id="loginModal">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('loginModal')">✕</button>
+    <h2>Login to Book</h2>
+    <div class="form-group"><label>Email</label><input type="email" class="form-input" placeholder="you@example.com"/></div>
+    <div class="form-group"><label>Password</label><input type="password" class="form-input" placeholder="••••••••"/></div>
+    <button class="btn-primary full" onclick="fakeLogin();hideModal('loginModal');openBooking()">Login & Continue</button>
+    <p class="form-alt">No account? <a href="register.html">Register free</a></p>
+  </div>
+</div>
+
+<!-- Booking Confirm Modal -->
+<div class="modal-bg" id="bookModal">
+  <div class="modal" style="max-width:480px;">
+    <button class="modal-close" onclick="hideModal('bookModal')">✕</button>
+    <h2>Confirm Booking</h2>
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin:16px 0;">
+      <div id="bookSummary"></div>
+    </div>
+    <div class="form-group"><label>Purpose of Booking</label><input type="text" id="bookPurpose" class="form-input" placeholder="e.g. Wedding Reception"/></div>
+    <div class="form-group"><label>Number of Guests</label><input type="number" id="bookGuests" class="form-input" placeholder="100"/></div>
+    <div class="form-group"><label>Contact Number</label><input type="tel" id="bookPhone" class="form-input" placeholder="+91 98765 43210"/></div>
+    <hr class="widget-divider"/>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Payment via Razorpay / UPI / Net Banking</p>
+    <button class="btn-success full" onclick="confirmBooking()">💳 Pay & Confirm Booking</button>
+  </div>
+</div>
+
+<!-- QR Pass Modal -->
+<div class="modal-bg" id="qrModal">
+  <div class="modal" style="text-align:center;max-width:400px;">
+    <h2>✅ Booking Confirmed!</h2>
+    <div style="background:var(--bg);border-radius:var(--radius);padding:24px;margin:20px 0;">
+      <div style="font-size:80px;margin-bottom:12px;">📱</div>
+      <div style="font-family:monospace;font-size:22px;letter-spacing:4px;color:var(--primary-light)" id="qrCode"></div>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">Show this QR code at the entrance</p>
+    </div>
+    <div id="qrDetails" style="font-size:13px;color:var(--text-muted);text-align:left;margin-bottom:16px;"></div>
+    <button class="btn-primary full" onclick="hideModal('qrModal');window.location.href='user-dashboard.html'">Go to My Bookings</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  let currentSpace = null;
+  let selectedSlot = "";
+  let selectedDate = "";
+
+  const SLOTS = ["09:00 AM", "11:00 AM", "01:00 PM", "03:00 PM", "05:00 PM", "07:00 PM"];
+  const TAKEN = ["01:00 PM", "05:00 PM"];
+
+  function renderProperty() {
+    const id = parseInt(getParam("id")) || 1;
+    const space = SPACES.find(s => s.id === id) || SPACES[0];
+    currentSpace = space;
+    document.title = space.name + " — SpaceBook";
+
+    document.getElementById("propContent").innerHTML = `
+      <div class="prop-detail">
+        <div class="prop-image">${space.emoji}</div>
+        <div style="margin-top:20px">
+          <div class="prop-meta">
+            <span class="badge">${space.type}</span>
+            <span class="badge green">${space.available ? "✅ Available" : "❌ Booked"}</span>
+          </div>
+          <h1 class="prop-title">${space.name}</h1>
+          <div class="prop-meta">
+            <span>📍 ${space.address}</span>
+            <span class="prop-rating">⭐ ${space.rating}</span>
+            <span style="color:var(--text-muted)">(${space.reviews} reviews)</span>
+            <span>👥 Up to ${space.capacity} guests</span>
+          </div>
+          <p style="color:var(--text-muted);margin-bottom:20px;">${space.description}</p>
+          <h3 style="font-size:15px;font-weight:700;margin-bottom:10px;">Amenities</h3>
+          <div class="amenities-grid">
+            ${space.amenities.map(a=>`<span class="amenity-tag">✓ ${a}</span>`).join("")}
+          </div>
+          <div class="avail-section">
+            <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;">Check Availability</h3>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
+              <input type="date" id="availDate" class="form-input" style="max-width:200px;" onchange="renderSlots(this.value)"/>
+              <span style="font-size:13px;color:var(--text-muted)">Select a date to view available slots</span>
+            </div>
+            <div id="slotsContainer"></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="booking-widget">
+          <div class="widget-price">${fmt(space.price)} <small>/day</small></div>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Full day booking · Instant Confirmation</p>
+          <div class="form-group">
+            <label>Your Booking Date</label>
+            <input type="date" id="widgetDate" class="form-input" onchange="updateWidget(this.value)"/>
+          </div>
+          <hr class="widget-divider"/>
+          <div style="font-size:14px;display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span>${fmt(space.price)} × 1 day</span><span>${fmt(space.price)}</span>
+          </div>
+          <div style="font-size:14px;display:flex;justify-content:space-between;margin-bottom:8px;color:var(--text-muted)">
+            <span>Platform fee (5%)</span><span>${fmt(Math.round(space.price*0.05))}</span>
+          </div>
+          <hr class="widget-divider"/>
+          <div class="widget-total">
+            <span>Total</span>
+            <span id="totalAmt">${fmt(Math.round(space.price*1.05))}</span>
+          </div>
+          <button class="btn-primary full" style="margin-top:20px;padding:14px;" onclick="openBooking()">
+            Book Now →
+          </button>
+          <p style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:10px;">🔒 Instant confirmation · Secure payment</p>
+        </div>
+      </div>`;
+
+    // Set min date
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("availDate").min = today;
+    document.getElementById("widgetDate").min = today;
+  }
+
+  function renderSlots(date) {
+    selectedDate = date;
+    if (!date) return;
+    const container = document.getElementById("slotsContainer");
+    container.innerHTML = `<p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Available time slots for ${fmtDate(date)}:</p>
+      <div>${SLOTS.map(slot => {
+        const taken = TAKEN.includes(slot);
+        return `<button class="slot-btn ${taken ? "slot-taken" : "slot-avail"}" 
+          onclick="${taken ? "" : `selectSlot('${slot}')`}" id="slot-${slot.replace(/ /g,'')}">${slot} ${taken ? "✕" : "✓"}</button>`;
+      }).join("")}</div>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">🟢 Available &nbsp; 🔴 Booked</p>`;
+  }
+
+  function selectSlot(slot) {
+    selectedSlot = slot;
+    document.querySelectorAll(".slot-btn").forEach(b => b.classList.remove("selected"));
+    const btn = document.getElementById("slot-"+slot.replace(/ /g,""));
+    if (btn) btn.classList.add("selected");
+  }
+
+  function updateWidget(date) {
+    selectedDate = date;
+  }
+
+  function openBooking() {
+    const user = JSON.parse(localStorage.getItem("sbUser") || "null");
+    if (!user) { showModal("loginModal"); return; }
+    const date = document.getElementById("widgetDate")?.value;
+    if (!date) { showToast("Please select a booking date", "error"); return; }
+    selectedDate = date;
+    document.getElementById("bookSummary").innerHTML = `
+      <p style="font-weight:600;font-size:15px;margin-bottom:8px;">${currentSpace.name}</p>
+      <p style="font-size:13px;color:var(--text-muted)">📅 ${fmtDate(date)}</p>
+      <p style="font-size:13px;color:var(--text-muted)">📍 ${currentSpace.address}</p>
+      <p style="font-size:15px;font-weight:700;margin-top:10px;">Total: ${fmt(Math.round(currentSpace.price*1.05))}</p>`;
+    showModal("bookModal");
+  }
+
+  function confirmBooking() {
+    const purpose = document.getElementById("bookPurpose").value;
+    const guests = document.getElementById("bookGuests").value;
+    const phone = document.getElementById("bookPhone").value;
+    if (!purpose || !guests || !phone) { showToast("Please fill all fields", "error"); return; }
+
+    const bookingId = "BK" + Date.now().toString().slice(-8);
+    // Save to localStorage
+    const bookings = JSON.parse(localStorage.getItem("sbBookings") || "[]");
+    bookings.push({
+      id: bookingId,
+      space: currentSpace.name,
+      spaceId: currentSpace.id,
+      date: selectedDate,
+      guests: parseInt(guests),
+      amount: Math.round(currentSpace.price * 1.05),
+      purpose,
+      phone,
+      status: "confirmed",
+      bookedOn: new Date().toISOString()
+    });
+    localStorage.setItem("sbBookings", JSON.stringify(bookings));
+
+    hideModal("bookModal");
+    document.getElementById("qrCode").textContent = bookingId;
+    document.getElementById("qrDetails").innerHTML = `
+      <p><strong>Space:</strong> ${currentSpace.name}</p>
+      <p><strong>Date:</strong> ${fmtDate(selectedDate)}</p>
+      <p><strong>Guests:</strong> ${guests}</p>
+      <p><strong>Amount Paid:</strong> ${fmt(Math.round(currentSpace.price * 1.05))}</p>
+      <p><strong>Purpose:</strong> ${purpose}</p>`;
+    showModal("qrModal");
+  }
+
+  document.addEventListener("DOMContentLoaded", renderProperty);
+</script>
+</body>
+</html>

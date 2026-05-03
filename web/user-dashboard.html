@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Bookings — SpaceBook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span class="logo-icon">SB</span><span class="logo-text">SpaceBook</span></a>
+    <div class="nav-links">
+      <a href="book.html">Book a Space</a>
+      <a href="user-dashboard.html" style="color:var(--primary-light)">My Bookings</a>
+    </div>
+    <div class="nav-auth" id="navAuth">
+      <button class="btn-outline" onclick="showModal('loginModal')">Login</button>
+      <a href="register.html" class="btn-primary">Register</a>
+    </div>
+    <button class="hamburger" onclick="toggleNav()">&#9776;</button>
+  </div>
+  <div class="mobile-nav" id="mobileNav">
+    <a href="book.html">Book</a><a href="user-dashboard.html">My Bookings</a>
+  </div>
+</nav>
+
+<div style="max-width:1200px;margin:0 auto;padding:32px 24px 8px;">
+  <h1 style="font-size:26px;font-weight:700;">My Dashboard</h1>
+  <p id="userGreet" style="color:var(--text-muted);margin-top:4px;">Loading...</p>
+</div>
+
+<div style="max-width:1200px;margin:0 auto;padding:16px 24px 48px;">
+  <!-- Stats -->
+  <div class="dash-grid" style="margin-bottom:28px;" id="statsGrid">
+    <div class="dash-card"><div class="card-label">Total Bookings</div><div class="card-val" id="sTotal">—</div></div>
+    <div class="dash-card"><div class="card-label">Active</div><div class="card-val" id="sActive" style="color:var(--success)">—</div></div>
+    <div class="dash-card"><div class="card-label">Cancelled</div><div class="card-val" id="sCancelled" style="color:var(--danger)">—</div></div>
+    <div class="dash-card"><div class="card-label">Your Email</div><div class="card-val" id="sEmail" style="font-size:14px;color:var(--text-muted)">—</div></div>
+  </div>
+
+  <!-- Bookings Table -->
+  <div class="section-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h3>Your Bookings</h3>
+      <a href="book.html" class="btn-primary" style="padding:8px 18px;font-size:13px;">+ New Booking</a>
+    </div>
+    <div id="bookingsContent">
+      <p style="color:var(--text-muted);font-size:14px;text-align:center;padding:32px 0;">Loading...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal-bg" id="loginModal">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('loginModal')">✕</button>
+    <h2>Login</h2>
+    <div class="form-group">
+      <label>Email *</label>
+      <input type="email" id="lEmail" class="form-input" placeholder="you@gmail.com"
+        oninput="clearErrors('lEmail')" onblur="showError('lEmail', Validate.email(this.value))"/>
+    </div>
+    <button class="btn-primary full" id="loginBtn" onclick="doLogin()">Login</button>
+    <p class="form-alt" style="margin-top:12px;">No account? <a href="register.html" style="color:var(--primary-light)">Register free</a></p>
+  </div>
+</div>
+
+<!-- Cancel Confirm Modal -->
+<div class="modal-bg" id="cancelModal">
+  <div class="modal" style="text-align:center;max-width:400px;">
+    <h2>Cancel Booking?</h2>
+    <p style="color:var(--text-muted);margin:12px 0 24px;font-size:14px;">This booking will be marked as CANCELLED.</p>
+    <div style="display:flex;gap:12px;justify-content:center;">
+      <button class="btn-outline" onclick="hideModal('cancelModal')">Keep Booking</button>
+      <button id="confirmCancelBtn"
+        style="background:var(--danger);color:white;border:none;padding:10px 22px;border-radius:var(--radius);cursor:pointer;font-weight:600;">
+        Yes, Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="js/api.js"></script>
+<script>
+  async function loadDashboard() {
+    const user = getUser();
+    if (!user) {
+      document.getElementById('userGreet').textContent = 'Please login to view your bookings.';
+      document.getElementById('bookingsContent').innerHTML = `
+        <div style="text-align:center;padding:40px;">
+          <p style="color:var(--text-muted);margin-bottom:16px;">You need to login to view your bookings.</p>
+          <button class="btn-primary" onclick="showModal('loginModal')">Login</button>
+          <a href="register.html" class="btn-outline" style="margin-left:10px;display:inline-block;padding:10px 20px;">Register</a>
+        </div>`;
+      return;
+    }
+
+    document.getElementById('userGreet').textContent = `Welcome, ${user.name}`;
+    document.getElementById('sEmail').textContent = user.email;
+
+    const result = await apiMyBookings(user.user_id);
+    const bookings = result.bookings || [];
+
+    document.getElementById('sTotal').textContent = bookings.length;
+    document.getElementById('sActive').textContent = bookings.filter(b => b.status === 'BOOKED').length;
+    document.getElementById('sCancelled').textContent = bookings.filter(b => b.status === 'CANCELLED').length;
+
+    if (!bookings.length) {
+      document.getElementById('bookingsContent').innerHTML = `
+        <div style="text-align:center;padding:48px 20px;">
+          <div style="font-size:48px;margin-bottom:12px;">📋</div>
+          <h3>No bookings yet</h3>
+          <p style="color:var(--text-muted);margin-bottom:16px;">You haven't made any bookings yet.</p>
+          <a href="book.html" class="btn-primary">Book Your First Space →</a>
+        </div>`;
+      return;
+    }
+
+    document.getElementById('bookingsContent').innerHTML = `
+      <div style="overflow-x:auto;">
+        <table class="bookings-table">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Location</th>
+              <th>Time Slot</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${bookings.map(b => `
+              <tr>
+                <td><strong>BK${String(b.booking_id).padStart(7,'0')}</strong></td>
+                <td>📍 ${b.location_name}, Chennai</td>
+                <td>${formatTime(b.start_time)} – ${formatTime(b.end_time)}</td>
+                <td>${fmtDate(b.booking_date)}</td>
+                <td>${statusBadge(b.status)}</td>
+                <td>
+                  ${b.status === 'BOOKED'
+                    ? `<button class="btn-outline" style="padding:5px 12px;font-size:12px;"
+                        onclick="openCancel(${b.booking_id})">Cancel</button>`
+                    : '—'}
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function formatTime(t) {
+    if (!t) return '';
+    const [h,m] = t.split(':').map(Number);
+    const suffix = h >= 12 ? 'PM' : 'AM';
+    return `${h%12||12}:${String(m).padStart(2,'0')} ${suffix}`;
+  }
+
+  let cancelBookingId = null;
+  function openCancel(id) {
+    cancelBookingId = id;
+    showModal('cancelModal');
+  }
+
+  document.getElementById('confirmCancelBtn').onclick = async function() {
+    const user = getUser();
+    const result = await apiCancelBooking(cancelBookingId, user.user_id);
+    hideModal('cancelModal');
+    if (result.error) { showToast('❌ ' + result.error, 'error'); return; }
+    showToast('Booking cancelled successfully.');
+    loadDashboard();
+  };
+
+  async function doLogin() {
+    clearErrors('lEmail');
+    const email = document.getElementById('lEmail').value.trim();
+    const err = Validate.email(email);
+    if (err) { showError('lEmail', err); return; }
+    const btn = document.getElementById('loginBtn');
+    btn.textContent = 'Logging in...'; btn.disabled = true;
+    const result = await apiLogin(email);
+    btn.textContent = 'Login'; btn.disabled = false;
+    if (result.error) { showToast('❌ ' + result.error, 'error'); showError('lEmail', result.error); return; }
+    saveUser(result.user);
+    hideModal('loginModal');
+    showToast('✅ Logged in!');
+    loadDashboard();
+    updateNav();
+  }
+
+  document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+</body>
+</html>

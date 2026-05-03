@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Host Dashboard — SpaceBook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span class="logo-icon">SB</span><span class="logo-text">SpaceBook</span></a>
+    <div class="nav-links">
+      <a href="listings.html">Browse</a>
+      <a href="host.html" style="color:var(--primary-light)">Host Dashboard</a>
+    </div>
+    <div class="nav-auth">
+      <button class="btn-outline" onclick="showModal('loginModal')">Login</button>
+      <a href="register.html" class="btn-primary">Register</a>
+    </div>
+    <button class="hamburger" onclick="toggleNav()">&#9776;</button>
+  </div>
+  <div class="mobile-nav" id="mobileNav">
+    <a href="listings.html">Browse</a>
+    <a href="host.html">Host Dashboard</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="container">
+    <h1>🏢 Host Dashboard</h1>
+    <p>Manage your spaces, view bookings, and track earnings</p>
+  </div>
+</div>
+
+<div style="max-width:1200px;margin:0 auto;padding:28px 24px;">
+
+  <!-- Stats -->
+  <div class="dash-grid" style="margin-bottom:28px">
+    <div class="dash-card">
+      <div class="card-label">Total Earnings</div>
+      <div class="card-val" style="color:var(--success)">₹48,500</div>
+      <div class="card-sub">This month</div>
+    </div>
+    <div class="dash-card">
+      <div class="card-label">Active Listings</div>
+      <div class="card-val" style="color:var(--primary-light)">3</div>
+      <div class="card-sub">Published spaces</div>
+    </div>
+    <div class="dash-card">
+      <div class="card-label">Total Bookings</div>
+      <div class="card-val">24</div>
+      <div class="card-sub">This month</div>
+    </div>
+    <div class="dash-card">
+      <div class="card-label">Avg Rating</div>
+      <div class="card-val" style="color:var(--warning)">4.8 ⭐</div>
+      <div class="card-sub">From 87 reviews</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('listings',this)">🏛️ My Listings</button>
+    <button class="tab-btn" onclick="showTab('bookings',this)">📋 Bookings</button>
+    <button class="tab-btn" onclick="showTab('add',this)">➕ Add Space</button>
+    <button class="tab-btn" onclick="showTab('earnings',this)">💰 Earnings</button>
+  </div>
+
+  <!-- Listings Tab -->
+  <div id="tab-listings">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+      <button class="btn-primary" onclick="showTab('add',document.querySelectorAll('.tab-btn')[2])">+ Add New Space</button>
+    </div>
+    <div class="cards-grid" id="hostListings"></div>
+  </div>
+
+  <!-- Bookings Tab -->
+  <div id="tab-bookings" style="display:none">
+    <div class="section-card">
+      <h3>Incoming Bookings</h3>
+      <div style="overflow-x:auto;">
+        <table class="bookings-table">
+          <thead><tr><th>ID</th><th>Space</th><th>Guest</th><th>Date</th><th>Guests</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><strong>BK2026010</strong></td><td>Chennai Grand Hall</td><td>Priya S.</td><td>10 May 2026</td><td>200</td><td>₹8,400</td><td><span class="status-badge status-pending">Pending</span></td>
+              <td style="display:flex;gap:6px;padding:14px 16px;">
+                <button class="btn-success" style="padding:5px 12px;font-size:12px;" onclick="approveBooking(this)">Approve</button>
+                <button style="background:var(--danger);color:white;border:none;padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer;" onclick="rejectBooking(this)">Reject</button>
+              </td>
+            </tr>
+            <tr><td><strong>BK2026011</strong></td><td>Chennai Grand Hall</td><td>Mohan R.</td><td>15 May 2026</td><td>150</td><td>₹8,400</td><td><span class="status-badge status-confirmed">Confirmed</span></td><td>—</td></tr>
+            <tr><td><strong>BK2026012</strong></td><td>Tech Studio</td><td>Anitha K.</td><td>20 May 2026</td><td>5</td><td>₹2,100</td><td><span class="status-badge status-confirmed">Confirmed</span></td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Space Tab -->
+  <div id="tab-add" style="display:none">
+    <div class="section-card">
+      <h3>Add New Space</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:700px;">
+        <div class="form-group"><label>Space Name</label><input type="text" class="form-input" id="aName" placeholder="e.g. Grand Community Hall"/></div>
+        <div class="form-group">
+          <label>Space Type</label>
+          <select class="form-input" id="aType">
+            <option value="">Select type</option>
+            <option>hall</option><option>auditorium</option><option>cowork</option><option>studio</option><option>turf</option>
+          </select>
+        </div>
+        <div class="form-group"><label>City</label>
+          <select class="form-input" id="aCity">
+            <option>Chennai</option><option>Coimbatore</option><option>Madurai</option><option>Salem</option><option>Trichy</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Full Address</label><input type="text" class="form-input" id="aAddr" placeholder="Street, Area, City, PIN"/></div>
+        <div class="form-group"><label>Capacity (persons)</label><input type="number" class="form-input" id="aCap" placeholder="100"/></div>
+        <div class="form-group"><label>Price per Day (₹)</label><input type="number" class="form-input" id="aPrice" placeholder="5000"/></div>
+        <div class="form-group" style="grid-column:span 2"><label>Description</label><textarea class="form-input" id="aDesc" rows="3" placeholder="Describe your space, its features and location..."></textarea></div>
+        <div class="form-group" style="grid-column:span 2">
+          <label>Amenities (comma separated)</label>
+          <input type="text" class="form-input" id="aAmen" placeholder="AC, Parking, Projector, Whiteboard"/>
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label>Space Emoji (for display)</label>
+          <select class="form-input" id="aEmoji">
+            <option value="🏛️">🏛️ Community Hall</option>
+            <option value="🎭">🎭 Auditorium</option>
+            <option value="💼">💼 Coworking</option>
+            <option value="🎙️">🎙️ Studio</option>
+            <option value="⚽">⚽ Turf</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-success" style="margin-top:8px;" onclick="addSpace()">✅ Publish Space</button>
+    </div>
+  </div>
+
+  <!-- Earnings Tab -->
+  <div id="tab-earnings" style="display:none">
+    <div class="section-card">
+      <h3>Earnings Summary</h3>
+      <div class="dash-grid" style="margin-bottom:20px;">
+        <div class="dash-card"><div class="card-label">This Month</div><div class="card-val" style="color:var(--success)">₹48,500</div></div>
+        <div class="dash-card"><div class="card-label">Last Month</div><div class="card-val">₹36,200</div></div>
+        <div class="dash-card"><div class="card-label">Total (All Time)</div><div class="card-val">₹2,18,400</div></div>
+        <div class="dash-card"><div class="card-label">Pending Payout</div><div class="card-val" style="color:var(--warning)">₹12,000</div></div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="bookings-table">
+          <thead><tr><th>Month</th><th>Bookings</th><th>Gross Earnings</th><th>Platform Fee (10%)</th><th>Net Payout</th></tr></thead>
+          <tbody>
+            <tr><td>April 2026</td><td>24</td><td>₹53,900</td><td>₹5,390</td><td style="color:var(--success);font-weight:700;">₹48,510</td></tr>
+            <tr><td>March 2026</td><td>18</td><td>₹40,200</td><td>₹4,020</td><td style="color:var(--success);font-weight:700;">₹36,180</td></tr>
+            <tr><td>February 2026</td><td>12</td><td>₹28,000</td><td>₹2,800</td><td style="color:var(--success);font-weight:700;">₹25,200</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-bg" id="loginModal">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('loginModal')">✕</button>
+    <h2>Login</h2>
+    <div class="form-group"><label>Email</label><input type="email" class="form-input" placeholder="you@example.com"/></div>
+    <div class="form-group"><label>Password</label><input type="password" class="form-input" placeholder="••••••••"/></div>
+    <button class="btn-primary full" onclick="fakeLogin()">Login</button>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  function showTab(name, btn) {
+    document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = "none");
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("tab-" + name).style.display = "block";
+    if (btn) btn.classList.add("active");
+  }
+
+  function approveBooking(btn) {
+    const td = btn.closest("td");
+    const row = btn.closest("tr");
+    row.querySelector(".status-badge").className = "status-badge status-confirmed";
+    row.querySelector(".status-badge").textContent = "Confirmed";
+    td.innerHTML = "—";
+    showToast("✅ Booking approved!");
+  }
+
+  function rejectBooking(btn) {
+    const td = btn.closest("td");
+    const row = btn.closest("tr");
+    row.querySelector(".status-badge").className = "status-badge status-cancelled";
+    row.querySelector(".status-badge").textContent = "Rejected";
+    td.innerHTML = "—";
+    showToast("Booking rejected.");
+  }
+
+  function addSpace() {
+    const name = document.getElementById("aName").value;
+    const type = document.getElementById("aType").value;
+    const price = parseInt(document.getElementById("aPrice").value);
+    const cap = parseInt(document.getElementById("aCap").value);
+    if (!name || !type || !price || !cap) { showToast("Please fill all required fields", "error"); return; }
+    const newSpace = {
+      id: Date.now(), name, type,
+      city: document.getElementById("aCity").value,
+      price, capacity: cap,
+      rating: 5.0, reviews: 0,
+      emoji: document.getElementById("aEmoji").value,
+      available: true,
+      amenities: document.getElementById("aAmen").value.split(",").map(a=>a.trim()),
+      description: document.getElementById("aDesc").value,
+      address: document.getElementById("aAddr").value
+    };
+    const hosted = JSON.parse(localStorage.getItem("sbHosted") || "[]");
+    hosted.push(newSpace);
+    localStorage.setItem("sbHosted", JSON.stringify(hosted));
+    showToast("✅ Space published successfully!");
+    loadHostListings();
+    showTab("listings", document.querySelectorAll(".tab-btn")[0]);
+  }
+
+  function loadHostListings() {
+    const hosted = JSON.parse(localStorage.getItem("sbHosted") || "[]");
+    const all = [...SPACES.slice(0,3), ...hosted];
+    const grid = document.getElementById("hostListings");
+    grid.innerHTML = all.map(s => `
+      <div class="listing-card">
+        <div class="card-img">${s.emoji}</div>
+        <div class="card-body">
+          <div class="card-meta"><span class="badge">${s.type}</span><span class="badge green">Active</span></div>
+          <h3>${s.name}</h3>
+          <p>📍 ${s.city} &nbsp;•&nbsp; 👥 Up to ${s.capacity}</p>
+          <div class="card-footer">
+            <div class="card-price">₹${s.price.toLocaleString()} <small>/day</small></div>
+            <div class="card-rating">⭐ ${s.rating}</div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button class="btn-outline" style="padding:6px 14px;font-size:12px;" onclick="showToast('Edit feature coming soon!')">Edit</button>
+            <button style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;" onclick="showToast('Space removed.')">Remove</button>
+          </div>
+        </div>
+      </div>`).join("");
+  }
+
+  document.addEventListener("DOMContentLoaded", loadHostListings);
+</script>
+</body>
+</html>

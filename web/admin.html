@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel — SpaceBook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .admin-layout { display:grid; grid-template-columns:220px 1fr; min-height:calc(100vh - 64px); }
+    .admin-sidebar { background:var(--bg-card); border-right:1px solid var(--border); padding:24px 0; position:sticky; top:64px; height:calc(100vh - 64px); overflow-y:auto; }
+    .admin-menu-item { display:flex; align-items:center; gap:10px; padding:12px 20px; font-size:14px; font-weight:500; color:var(--text-muted); cursor:pointer; transition:var(--transition); border-left:3px solid transparent; }
+    .admin-menu-item:hover, .admin-menu-item.active { color:var(--text); background:rgba(99,102,241,0.08); border-left-color:var(--primary); }
+    .admin-main { padding:28px 32px; }
+    .admin-panel { display:none; }
+    .admin-panel.active { display:block; }
+    @media(max-width:768px){ .admin-layout{grid-template-columns:1fr;} .admin-sidebar{height:auto;position:static;display:flex;flex-wrap:wrap;padding:8px;gap:4px;} .admin-menu-item{border-left:none;border-bottom:2px solid transparent;padding:8px 12px;font-size:12px;} }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span class="logo-icon">SB</span><span class="logo-text">SpaceBook Admin</span></a>
+    <div style="margin-left:auto;display:flex;gap:12px;align-items:center;">
+      <span style="font-size:13px;color:var(--text-muted)">🛡️ Admin Panel</span>
+      <a href="index.html" class="btn-outline" style="padding:7px 16px;font-size:13px;">← Main Site</a>
+    </div>
+  </div>
+</nav>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div onclick="setPanel('overview',this)" class="admin-menu-item active">📊 Overview</div>
+    <div onclick="setPanel('users',this)" class="admin-menu-item">👥 Users</div>
+    <div onclick="setPanel('spaces',this)" class="admin-menu-item">🏛️ Spaces</div>
+    <div onclick="setPanel('bookings',this)" class="admin-menu-item">📋 Bookings</div>
+    <div onclick="setPanel('revenue',this)" class="admin-menu-item">💰 Revenue</div>
+    <div onclick="setPanel('reports',this)" class="admin-menu-item">⚠️ Reports</div>
+  </aside>
+
+  <main class="admin-main">
+
+    <!-- Overview -->
+    <div class="admin-panel active" id="panel-overview">
+      <h2 style="margin-bottom:24px;">Dashboard Overview</h2>
+      <div class="dash-grid" style="margin-bottom:28px;">
+        <div class="dash-card"><div class="card-label">Total Users</div><div class="card-val">3,842</div><div class="card-sub">+128 this month</div></div>
+        <div class="dash-card"><div class="card-label">Total Spaces</div><div class="card-val" style="color:var(--primary-light)">1,430</div><div class="card-sub">32 pending approval</div></div>
+        <div class="dash-card"><div class="card-label">Total Bookings</div><div class="card-val">12,854</div><div class="card-sub">This month: 824</div></div>
+        <div class="dash-card"><div class="card-label">Platform Revenue</div><div class="card-val" style="color:var(--success)">₹5.2L</div><div class="card-sub">April 2026</div></div>
+      </div>
+      <div class="section-card">
+        <h3>Recent Activity</h3>
+        <table class="bookings-table">
+          <thead><tr><th>Event</th><th>User</th><th>Details</th><th>Time</th></tr></thead>
+          <tbody>
+            <tr><td>🟢 New Booking</td><td>Priya S.</td><td>Chennai Grand Hall — ₹8,400</td><td>2 mins ago</td></tr>
+            <tr><td>🔵 New Registration</td><td>Murugan R.</td><td>Host account created</td><td>15 mins ago</td></tr>
+            <tr><td>🟡 Space Pending</td><td>Anita K.</td><td>Salem Cowork Studio needs approval</td><td>1 hr ago</td></tr>
+            <tr><td>🔴 Cancellation</td><td>Karthik M.</td><td>Booking BK2026090 cancelled</td><td>2 hrs ago</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Users -->
+    <div class="admin-panel" id="panel-users">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h2>Manage Users</h2>
+        <input type="text" class="form-input" style="max-width:250px;" placeholder="🔍 Search users..." oninput="filterTable(this,'usersTable')"/>
+      </div>
+      <div class="section-card">
+        <div style="overflow-x:auto;">
+          <table class="bookings-table" id="usersTable">
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Bookings</th><th>Joined</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>Rajesh Kumar</td><td>rajesh@example.com</td><td>User</td><td>12</td><td>Jan 2026</td><td><span class="status-badge status-confirmed">Active</span></td><td><button class="btn-outline" style="font-size:12px;padding:4px 10px;" onclick="showToast('User suspended.')">Suspend</button></td></tr>
+              <tr><td>Priya Sharma</td><td>priya@example.com</td><td>User</td><td>8</td><td>Feb 2026</td><td><span class="status-badge status-confirmed">Active</span></td><td><button class="btn-outline" style="font-size:12px;padding:4px 10px;" onclick="showToast('User suspended.')">Suspend</button></td></tr>
+              <tr><td>Murugan S.</td><td>murugan@example.com</td><td>Host</td><td>3</td><td>Mar 2026</td><td><span class="status-badge status-confirmed">Active</span></td><td><button class="btn-outline" style="font-size:12px;padding:4px 10px;" onclick="showToast('User suspended.')">Suspend</button></td></tr>
+              <tr><td>Kavitha R.</td><td>kavitha@example.com</td><td>User</td><td>0</td><td>Apr 2026</td><td><span class="status-badge status-pending">Inactive</span></td><td><button class="btn-outline" style="font-size:12px;padding:4px 10px;" onclick="showToast('User activated.')">Activate</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spaces -->
+    <div class="admin-panel" id="panel-spaces">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h2>Manage Spaces</h2>
+        <span style="font-size:13px;color:var(--warning);">⚠️ 32 pending approval</span>
+      </div>
+      <div class="section-card">
+        <h3 style="margin-bottom:16px;">Pending Approval</h3>
+        <div style="overflow-x:auto;">
+          <table class="bookings-table">
+            <thead><tr><th>Space</th><th>Host</th><th>Type</th><th>City</th><th>Price/Day</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Salem Cowork Studio</strong></td><td>Anita K.</td><td>cowork</td><td>Salem</td><td>₹800</td>
+                <td style="display:flex;gap:6px;padding:14px 16px;">
+                  <button class="btn-success" style="padding:5px 12px;font-size:12px;" onclick="approveSpace(this)">Approve</button>
+                  <button style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer;" onclick="rejectSpace(this)">Reject</button>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Trichy Banquet Palace</strong></td><td>Rajan P.</td><td>banquet</td><td>Trichy</td><td>₹18,000</td>
+                <td style="display:flex;gap:6px;padding:14px 16px;">
+                  <button class="btn-success" style="padding:5px 12px;font-size:12px;" onclick="approveSpace(this)">Approve</button>
+                  <button style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer;" onclick="rejectSpace(this)">Reject</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="section-card">
+        <h3 style="margin-bottom:16px;">All Approved Spaces</h3>
+        <div style="overflow-x:auto;">
+          <table class="bookings-table">
+            <thead><tr><th>Space</th><th>Host</th><th>Type</th><th>City</th><th>Bookings</th><th>Rating</th><th>Status</th></tr></thead>
+            <tbody id="adminSpaceList"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bookings -->
+    <div class="admin-panel" id="panel-bookings">
+      <h2 style="margin-bottom:20px;">All Bookings</h2>
+      <div class="section-card">
+        <div style="overflow-x:auto;">
+          <table class="bookings-table">
+            <thead><tr><th>ID</th><th>Space</th><th>User</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>BK2026001</strong></td><td>Chennai Grand Hall</td><td>Rajesh K.</td><td>10 May 2026</td><td>₹8,400</td><td><span class="status-badge status-confirmed">Confirmed</span></td></tr>
+              <tr><td><strong>BK2026002</strong></td><td>Coimbatore Tech Hub</td><td>Priya S.</td><td>25 Apr 2026</td><td>₹525</td><td><span class="status-badge status-confirmed">Confirmed</span></td></tr>
+              <tr><td><strong>BK2026003</strong></td><td>Madurai Auditorium</td><td>Karthik M.</td><td>1 Jun 2026</td><td>₹15,750</td><td><span class="status-badge status-pending">Pending</span></td></tr>
+              <tr><td><strong>BK2026004</strong></td><td>Salem Studio</td><td>Anitha R.</td><td>12 Apr 2026</td><td>₹2,100</td><td><span class="status-badge status-cancelled">Cancelled</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue -->
+    <div class="admin-panel" id="panel-revenue">
+      <h2 style="margin-bottom:20px;">Revenue Dashboard</h2>
+      <div class="dash-grid" style="margin-bottom:28px;">
+        <div class="dash-card"><div class="card-label">Total Revenue (All Time)</div><div class="card-val" style="color:var(--success)">₹52.4L</div></div>
+        <div class="dash-card"><div class="card-label">April 2026</div><div class="card-val">₹5.2L</div><div class="card-sub">+18% vs March</div></div>
+        <div class="dash-card"><div class="card-label">Platform Fee Collected</div><div class="card-val">₹5.2L</div><div class="card-sub">10% of bookings</div></div>
+        <div class="dash-card"><div class="card-label">Pending Payouts</div><div class="card-val" style="color:var(--warning)">₹84,000</div><div class="card-sub">To hosts</div></div>
+      </div>
+      <div class="section-card">
+        <h3>Monthly Breakdown</h3>
+        <table class="bookings-table">
+          <thead><tr><th>Month</th><th>Bookings</th><th>Gross Volume</th><th>Platform Revenue (10%)</th><th>Payouts</th></tr></thead>
+          <tbody>
+            <tr><td>April 2026</td><td>824</td><td>₹52.0L</td><td style="color:var(--success);font-weight:600;">₹5.2L</td><td>₹46.8L</td></tr>
+            <tr><td>March 2026</td><td>698</td><td>₹44.1L</td><td style="color:var(--success);font-weight:600;">₹4.41L</td><td>₹39.7L</td></tr>
+            <tr><td>February 2026</td><td>512</td><td>₹32.4L</td><td style="color:var(--success);font-weight:600;">₹3.24L</td><td>₹29.2L</td></tr>
+            <tr><td>January 2026</td><td>430</td><td>₹27.2L</td><td style="color:var(--success);font-weight:600;">₹2.72L</td><td>₹24.5L</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Reports -->
+    <div class="admin-panel" id="panel-reports">
+      <h2 style="margin-bottom:20px;">Reports & Issues</h2>
+      <div class="section-card">
+        <h3>Flagged Issues</h3>
+        <table class="bookings-table">
+          <thead><tr><th>Type</th><th>Reported By</th><th>Details</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><span class="status-badge status-pending">Spam</span></td><td>User #1042</td><td>Fake listing reported: "Dream Hall"</td><td>20 Apr 2026</td><td><button class="btn-outline" style="font-size:12px;padding:4px 10px;" onclick="showToast('Listing removed.')">Remove</button></td></tr>
+            <tr><td><span class="status-badge status-cancelled">Fraud</span></td><td>User #2081</td><td>Payment dispute for BK2026055</td><td>19 Apr 2026</td><td><button class="btn-outline" style="font-size:12px;padding:4px 10px;" onclick="showToast('Case escalated.')">Escalate</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  function setPanel(name, el) {
+    document.querySelectorAll(".admin-panel").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".admin-menu-item").forEach(m => m.classList.remove("active"));
+    document.getElementById("panel-" + name).classList.add("active");
+    el.classList.add("active");
+
+    if (name === "spaces") loadAdminSpaces();
+  }
+
+  function loadAdminSpaces() {
+    const tbody = document.getElementById("adminSpaceList");
+    if (!tbody) return;
+    tbody.innerHTML = SPACES.map(s => `
+      <tr>
+        <td>${s.emoji} ${s.name}</td>
+        <td>Owner Name</td>
+        <td>${s.type}</td>
+        <td>${s.city}</td>
+        <td>${Math.floor(Math.random()*50)+5}</td>
+        <td>⭐ ${s.rating}</td>
+        <td><span class="status-badge status-confirmed">Active</span></td>
+      </tr>`).join("");
+  }
+
+  function filterTable(input, tableId) {
+    const val = input.value.toLowerCase();
+    document.querySelectorAll(`#${tableId} tbody tr`).forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(val) ? "" : "none";
+    });
+  }
+
+  function approveSpace(btn) {
+    const row = btn.closest("tr");
+    row.querySelector("td:last-child").innerHTML = `<span class="status-badge status-confirmed">Approved</span>`;
+    showToast("✅ Space approved!");
+  }
+
+  function rejectSpace(btn) {
+    btn.closest("tr").remove();
+    showToast("Space rejected and removed.");
+  }
+</script>
+</body>
+</html>
