@@ -12,6 +12,10 @@ A **production-ready private space booking platform** for Chennai, built with **
 - 📅 **Booking window** — today to 1 month ahead only
 - 🔗 **Multi-slot continuous booking** in a single transaction
 - ✅ **Duplicate booking prevention** per user per slot
+- 🛡️ **Security & Rate Limiting** — HTTP security headers and endpoint protection
+- 🧪 **Automated Testing** — Suite covering validation, utilities, and middleware
+- 🐳 **Containerization** — Dockerfile and Docker Compose orchestration with MySQL
+- ⚡ **CI/CD** — Multi-version Node.js matrix GitHub Actions workflow
 - 📊 **User dashboard** with booking history & cancel support
 
 ---
@@ -80,17 +84,24 @@ PORT=3000
 
 > ⚠️ The `.env` file is listed in `.gitignore` and will **never be pushed to GitHub**.
 
-### 3. Install Dependencies & Start Server
+### 3. Install Dependencies, Run Tests & Start Server
 
 ```bash
 cd server
 npm install
+npm test
 node index.js
 ```
 
-### 4. Open the App
+### 4. Running with Docker Compose (Alternative)
 
-Visit: **http://localhost:3000**
+To spin up the entire application including MySQL with automated schema initialization:
+
+```bash
+docker-compose up --build
+```
+
+The application will be available at: **http://localhost:3000**
 
 ---
 
