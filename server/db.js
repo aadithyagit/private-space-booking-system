@@ -14,14 +14,19 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-pool.getConnection()
-  .then(conn => {
-    console.log('✅ MySQL connected — private_space_booking');
-    conn.release();
-  })
-  .catch(err => {
-    console.error('❌ MySQL connection failed:', err.message);
-    process.exit(1);
-  });
+// Test connection on startup (non-fatal in test mode)
+if (process.env.NODE_ENV !== 'test') {
+  pool.getConnection()
+    .then(conn => {
+      console.log('✅ MySQL connected — private_space_booking');
+      conn.release();
+    })
+    .catch(err => {
+      console.error('❌ MySQL connection warning:', err.message);
+      if (process.env.NODE_ENV === 'production') {
+        process.exit(1);
+      }
+    });
+}
 
 module.exports = pool;
