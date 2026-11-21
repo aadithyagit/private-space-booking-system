@@ -9,18 +9,25 @@ const authRoutes      = require('./routes/auth');
 const locationsRoutes = require('./routes/locations');
 const timeSlotsRoutes = require('./routes/timeSlots');
 const bookingsRoutes  = require('./routes/bookings');
+const { securityHeaders, createRateLimiter } = require('./middleware/security');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(securityHeaders);
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Apply rate limiter to authentication endpoints
+const authLimiter = createRateLimiter({ max: 30, windowMs: 15 * 60 * 1000 });
 
 // Serve frontend
 app.use(express.static(path.join(__dirname, '../web')));
 
 // ---- API Routes (as required) ----
+app.use('/register',  authLimiter);
+app.use('/login',     authLimiter);
 app.use('/',          authRoutes);            // POST /register, POST /login
 app.use('/locations', locationsRoutes);       // GET  /locations
 app.use('/time-slots',timeSlotsRoutes);       // GET  /time-slots
