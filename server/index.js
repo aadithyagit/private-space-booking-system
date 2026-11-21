@@ -28,14 +28,8 @@ app.use('/book',      bookingsRoutes);        // POST /book, GET /book, PUT /boo
 
 // ---- Slot availability with capacity (30 people per slot) ----
 const db = require('./db');
+const { to12Hr, calculateAvailability } = require('./utils/timeFormat');
 const CAPACITY = 30;
-
-function to12Hr(t) {
-  const [h, m] = t.split(':').map(Number);
-  const suffix = h >= 12 ? 'PM' : 'AM';
-  const hour = h % 12 || 12;
-  return `${hour}:${String(m).padStart(2, '0')} ${suffix}`;
-}
 
 app.get('/slots-availability', async (req, res) => {
   try {
@@ -68,8 +62,8 @@ app.get('/slots-availability', async (req, res) => {
     counts.forEach(c => { countMap[c.slot_id] = Number(c.cnt); });
 
     const result = slots.map(s => {
-      const booked    = countMap[s.slot_id] || 0;
-      const spotsLeft = CAPACITY - booked;
+      const booked = countMap[s.slot_id] || 0;
+      const { spotsLeft, isAvailable } = calculateAvailability(CAPACITY, booked);
       // Normalize time fields to string (MySQL2 may return TIME as duration object)
       const startStr  = typeof s.start_time === 'string' ? s.start_time : String(s.start_time);
       const endStr    = typeof s.end_time   === 'string' ? s.end_time   : String(s.end_time);
@@ -79,7 +73,7 @@ app.get('/slots-availability', async (req, res) => {
         start_time: startStr,
         end_time:   endStr,
         spots_left: spotsLeft,
-        available:  spotsLeft > 0
+        available:  isAvailable
       };
     });
 
